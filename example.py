@@ -1,10 +1,10 @@
 """
-See how to use SPEAII module in this example.
+See how to use SPEA2 module in this example.
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-from SPEAII import spea2, scale, tradeoff
+from SPEA2 import spea2, scale, tradeoff
 
 n=2             # number of design variables
 l=n*16          # length of the chromosomes
