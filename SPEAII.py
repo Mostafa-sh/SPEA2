@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Mon Dec 16 20:12:49 2019
 @author: Mostafa
@@ -17,18 +15,23 @@ import matplotlib.pyplot as plt
 from os import path,mkdir
 
 def inpop(p,l):
-    # p is the population number
-    # l is the length of chromosome
+    """
+    p is the population number
+    l is the length of chromosome
+    
+    """
     pop = np.random.rand(p,l)<=0.5
     pop = pop.astype(int)
     return pop
 
 def dcode(pop,a,b,n=1,d=None):
-#     n= number of design variabels
-#    "pop"=population matrix [each row must be a chromosome]
-#    "n"(Optinal)=number of design variables (default: n=1)
-#    "d"(Optinal)=parts of a chromosome that is allocated to design variables
-
+    """
+    n= number of design variabels
+    "pop"=population matrix [each row must be a chromosome]
+    "n"(Optinal)=number of design variables (default: n=1)
+    "d"(Optinal)=parts of a chromosome that is allocated to design variables 
+    
+    """
     if np.isscalar(a): a=np.array([a]).astype(float)
     if np.isscalar(b): b=np.array([b]).astype(float)
     if a.size==1 and n>1: a=a*(np.zeros(n).astype(float)+1)
@@ -59,8 +62,16 @@ def dcode(pop,a,b,n=1,d=None):
 
     return dpop
 
+def scale(x):
+    # x=(x-np.min(x,0))/(np.max(x,0)-np.min(x,0))  # not so good
+    s=np.std(x,0)
+    m=np.mean(x,0)  
+    #columns of identical elements becomes columns of 0
+    s[s==0]=1   
+    return (x-m)/s
+    
 def fitness(V,mode='min'):
-    V=(V-np.min(V,0))/(np.max(V,0)-np.min(V,0))
+    V=scale(V)
     n=V.shape[0]
     T=np.swapaxes(np.tile(V,(n,1,1)),0,1)
     nE=np.logical_not( np.all(V==T,2) )
@@ -97,7 +108,7 @@ def envsel(e,F,V):
 
     elif e<g:
         msg=str(g-e)+' points removed from Pareto frontier'
-        V=(V-np.min(V,0))/(np.max(V,0)-np.min(V,0))
+        V=scale(V)
         V=V[argPF]
         n=V.shape[0]
         T=np.swapaxes(np.tile(V,(n,1,1)),0,1)
@@ -179,11 +190,10 @@ def a2s(A,sp=' '):
         s=str(A)
     return s
 
-def tradeoff(F):
-    d=np.max(F,axis=0)-np.min(F,axis=0)
-    d[d==0]=1
-    I=np.argmin(np.linalg.norm((F-np.min(F,axis=0))/d,axis=1))
-    return F[I,:],I
+def tradeoff(f):
+    sf=scale(f)
+    I=np.argmin(np.linalg.norm(sf,axis=1))
+    return f[I,:],I
 
 def spea2(objfun,n,l,bo1,bo2,g,p,ap,mp=0.2,mode='min',ipop=None,
           prnt=1,savedata=0,outfile='outputs'):
@@ -232,7 +242,7 @@ def spea2(objfun,n,l,bo1,bo2,g,p,ap,mp=0.2,mode='min',ipop=None,
         apop=pop[pf,:]
         afit=fit[pf]
         #--------------------------------
-        gn=str(t)
+        gn=str(t+1)
         if prnt==1:
             print('Generation'+' '+gn+': '+msg)
         if savedata!=0:
