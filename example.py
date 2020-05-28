@@ -1,31 +1,30 @@
 """
-See how to use SPEA2 module in this example.
+See how to use spea2 module in this example.
 """
-
 import numpy as np
 import matplotlib.pyplot as plt
-from SPEA2 import spea2, scale, tradeoff
+import spea2
 
-n=2             # number of design variables
-l=n*16          # length of the chromosomes
-g=100           # number of generations              
-p=35            # population size
-ap=35           # archive population size
-bo1=0           # lower boundary of all variables
-bo2=1           # upper boundary of all variables
-mp=0.2          # permutation probability (0<=mp<=1)
-mode='min'      # minimzation mode
-
-from math import pi
+# objective function
 def test(x):
     f=np.zeros((x.shape[0],2))
     f[:,0]=x[:,0]
-    f[:,1]=(1+10*x[:,1])*(1-(x[:,0]/(1+10*x[:,1]))**2-(x[:,0]/(1+10*x[:,1]))*np.sin(2*pi*4*x[:,0]))    
+    f[:,1]=(1+10*x[:,1])*(1-(x[:,0]/(1+10*x[:,1]))**2-(x[:,0]/(1+10*x[:,1]))*np.sin(2*3.14159*4*x[:,0]))    
     return f
 
-apop,avs,afvs = spea2(test,n,l,bo1,bo2,g,p,ap,mp,prnt=1,savedata=0)
+n=2      # number of real-valued design variables
+bo1=0    # lower boundary of all variables. [0,0] also works.
+bo2=1    # upper boundary of all variables. [1,1] also works.
+g=70     # number of generations
+p=40     # size of population         
+ap=25    # size of archive population (archive consists of the elites in population)
+mp=.1    # mutation probability (0<=mp<1)
 
-plt.plot(afvs[:,0],afvs[:,1],'bo',markersize=2,alpha=1,label='data')
-plt.title('Pareto frontier after 100 generations')
-plt.xlabel('f_0')
-plt.ylabel('f_1')
+avs,afvs = spea2.optimize(test,n,bo1,bo2,g,p,ap,mp,prnt_msg=0,savedata=1)
+
+fig=plt.figure(1)
+plt.scatter(afvs[:,0],afvs[:,1],s=15,alpha=0.7)
+plt.title('Pareto frontier after '+str(g)+' generations')
+plt.xlabel('function 1')
+plt.ylabel('function 2')
+fig.savefig('Pareto.png',dpi=150)
